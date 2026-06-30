@@ -15,13 +15,16 @@ jobs:
     - name: Build and Start Containers
       run: docker compose up -d --build
 
+    - name: Run Unit Tests (Jest)
+      # The -T flag is critical here so GitHub Actions doesn't freeze looking for terminal input!
+      run: docker compose exec -T nextjs_app npm test
+
     - name: Wait for Next.js Server to Boot
       run: |
         echo "Waiting for the Next.js server to initialize..."
         sleep 15 
 
     - name: Test Container Connection
-      # This hits the main page. If the DB connection failed, the app usually crashes, so this ensures it is alive!
       run: |
         echo "Pinging the application..."
         curl --fail --retry 3 --retry-delay 5 http://localhost:3000
