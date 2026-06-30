@@ -1,0 +1,32 @@
+name: Docker Practice CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Build and Start Containers
+      run: docker compose up -d --build
+
+    - name: Wait for Next.js Server to Boot
+      run: |
+        echo "Waiting for the Next.js server to initialize..."
+        sleep 15 
+
+    - name: Test Container Connection
+      # This hits the main page. If the DB connection failed, the app usually crashes, so this ensures it is alive!
+      run: |
+        echo "Pinging the application..."
+        curl --fail --retry 3 --retry-delay 5 http://localhost:3000
+        echo "Successfully verified container is running!"
+
+    - name: Clean Up Containers
+      if: always()
+      run: docker compose down
